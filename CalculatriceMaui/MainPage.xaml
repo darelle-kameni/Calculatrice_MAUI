@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CalculatriceMaui.MainPage"
+             Title="Calculatrice"
+             BackgroundColor="{StaticResource PageBackground}"
+             SizeChanged="OnPageSizeChanged">
+
+    <!--
+        Layout 1 : Grid racine.
+        Elle répartit l'écran en trois zones (en-tête, affichage, clavier) en portrait
+        et en deux colonnes (affichage | clavier) en paysage.
+        La réorganisation est faite dans le code-behind (OnPageSizeChanged).
+    -->
+    <Grid x:Name="RootGrid"
+          RowDefinitions="Auto,Auto,*"
+          ColumnDefinitions="*"
+          RowSpacing="0"
+          ColumnSpacing="10"
+          Padding="0">
+
+        <!-- ========================= EN-TÊTE ========================= -->
+        <!-- Layout 2 : Border + Layout 3 : HorizontalStackLayout -->
+        <Border Grid.Row="0"
+                        x:Name="HeaderBar"
+                BackgroundColor="{StaticResource Surface}"
+                Stroke="Transparent"
+                StrokeThickness="0"
+                Padding="16,10"
+                StrokeShape="RoundRectangle 0,0,22,22">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+
+                <Label Text="Calculatrice"
+                       FontSize="19"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level1" />
+
+                <Border IsVisible="{Binding HasMemory}"
+                        BackgroundColor="{StaticResource SurfaceVariant}"
+                        Stroke="Transparent"
+                        StrokeThickness="0"
+                        Padding="10,3"
+                        StrokeShape="RoundRectangle 10">
+                    <Label Text="{Binding MemoryText}"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" />
+                </Border>
+
+                <HorizontalStackLayout Spacing="6" HorizontalOptions="EndAndExpand" VerticalOptions="Center">
+
+                    <Button Text="AC"
+                            Style="{StaticResource SecondaryKeyStyle}"
+                            Padding="12,6"
+                            Clicked="OnClearAllClicked"
+                            SemanticProperties.Hint="Remise à zéro totale" />
+
+                    <Button Text="{Binding HistoryButtonText}"
+                            Style="{StaticResource SecondaryKeyStyle}"
+                            Padding="12,6"
+                            Clicked="OnHistoryClicked"
+                            SemanticProperties.Hint="Afficher ou masquer l'historique des calculs" />
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- ========================= AFFICHAGE ========================= -->
+        <!-- Layout 4 : ScrollView -> Layout 5 : VerticalStackLayout
+             -> Layout 6 : Border (carte d'affichage) + Layout 3 : HorizontalStackLayout -->
+        <ScrollView Grid.Row="1"
+                                x:Name="DisplayPanel"
+                    Orientation="Vertical"
+                    BackgroundColor="Transparent">
+            <VerticalStackLayout Padding="14,10,14,6" Spacing="10">
+
+                <Border BackgroundColor="{StaticResource Surface}"
+                        Stroke="Transparent"
+                        StrokeThickness="0"
+                        Padding="18,12"
+                        StrokeShape="RoundRectangle 22">
+                    <VerticalStackLayout Spacing="2">
+
+                        <HorizontalStackLayout Spacing="8"
+                                               HorizontalOptions="End"
+                                               VerticalOptions="Center">
+                            <Label Text="SCI"
+                                   FontSize="10"
+                                   CharacterSpacing="2"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            <Label Text="DEG"
+                                   FontSize="10"
+                                   CharacterSpacing="2"
+                                   TextColor="{StaticResource TextSecondary}" />
+                        </HorizontalStackLayout>
+
+                        <!-- Opération en cours, affichée au-dessus du résultat -->
+                        <Label x:Name="ExpressionLabel"
+                               Text="{Binding Expression}"
+                               FontSize="16"
+                               CharacterSpacing="1"
+                               TextColor="{StaticResource TextSecondary}"
+                               HorizontalTextAlignment="End"
+                               LineBreakMode="TailTruncation"
+                               HeightRequest="22" />
+
+                        <Label x:Name="DisplayLabel"
+                               Text="{Binding Display}"
+                               FontSize="{Binding DisplayFontSize}"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalTextAlignment="End"
+                               LineBreakMode="NoWrap"
+                               MinimumHeightRequest="56">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label"
+                                             Binding="{Binding HasError}"
+                                             Value="True">
+                                    <Setter Property="TextColor" Value="{StaticResource Error}" />
+                                    <Setter Property="FontSize" Value="32" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Historique : visible seulement si l'utilisateur l'ouvre -->
+                <Border x:Name="HistoryPanel"
+                        IsVisible="{Binding IsHistoryVisible}"
+                        BackgroundColor="{StaticResource Surface}"
+                        Stroke="Transparent"
+                        StrokeThickness="0"
+                        Padding="12"
+                        StrokeShape="RoundRectangle 18">
+                    <VerticalStackLayout Spacing="6">
+
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="Historique"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   VerticalOptions="Center" />
+                            <Button Text="Effacer"
+                                    Style="{StaticResource SecondaryKeyStyle}"
+                                    FontSize="12"
+                                    Padding="10,4"
+                                    HorizontalOptions="EndAndExpand"
+                                    Clicked="OnClearHistoryClicked" />
+                        </HorizontalStackLayout>
+
+                        <!-- Layout 4 (imbriqué) : l'historique défile sans pousser le clavier -->
+                        <ScrollView MaximumHeightRequest="170" Orientation="Vertical">
+                            <VerticalStackLayout x:Name="HistoryItems"
+                                                 Spacing="4"
+                                                 BindableLayout.ItemsSource="{Binding History}">
+                                <BindableLayout.EmptyView>
+                                    <Label Text="Aucun calcul enregistré."
+                                           FontSize="12"
+                                           TextColor="{StaticResource TextSecondary}" />
+                                </BindableLayout.EmptyView>
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BackgroundColor="{StaticResource SurfaceVariant}"
+                                                Stroke="Transparent"
+                                                StrokeThickness="0"
+                                                Padding="10,6"
+                                                StrokeShape="RoundRectangle 12">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnHistoryItemTapped" />
+                                            </Border.GestureRecognizers>
+                                            <HorizontalStackLayout Spacing="8">
+                                                <VerticalStackLayout Spacing="0">
+                                                    <Label Text="{Binding Expression}"
+                                                           FontSize="12"
+                                                           TextColor="{StaticResource TextSecondary}" />
+                                                    <Label Text="{Binding Result}"
+                                                           FontSize="16"
+                                                           FontAttributes="Bold" />
+                                                </VerticalStackLayout>
+                                                <Label Text="↺"
+                                                       FontSize="16"
+                                                       TextColor="{StaticResource Primary}"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </ScrollView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ========================= CLAVIER ========================= -->
+        <!-- Layout 4 : ScrollView -> Layout 5 : VerticalStackLayout
+             -> Layout 3 (ligne mémoire), Layout 7 (FlexLayout scientifiques), Layout 1 (Grid des chiffres) -->
+        <ScrollView Grid.Row="2"
+                                x:Name="KeypadPanel"
+                    Orientation="Vertical"
+                    BackgroundColor="Transparent">
+            <VerticalStackLayout Padding="14,4,14,12" Spacing="8">
+
+                <!-- Ligne mémoire -->
+                <HorizontalStackLayout x:Name="MemoryRow" Spacing="6">
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            Padding="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Button Text="MC"
+                                Style="{StaticResource SecondaryKeyStyle}"
+                                HeightRequest="36"
+                                WidthRequest="72"
+                                Clicked="OnMemoryClearClicked"
+                                SemanticProperties.Hint="Effacer la mémoire" />
+                    </Border>
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            Padding="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Button Text="MR"
+                                Style="{StaticResource SecondaryKeyStyle}"
+                                HeightRequest="36"
+                                WidthRequest="72"
+                                Clicked="OnMemoryRecallClicked"
+                                SemanticProperties.Hint="Rappeler la valeur en mémoire" />
+                    </Border>
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            Padding="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Button Text="M+"
+                                Style="{StaticResource SecondaryKeyStyle}"
+                                HeightRequest="36"
+                                WidthRequest="72"
+                                Clicked="OnMemoryAddClicked"
+                                SemanticProperties.Hint="Ajouter la valeur courante à la mémoire" />
+                    </Border>
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            Padding="0"
+                            StrokeShape="RoundRectangle 12">
+                        <Button Text="M−"
+                                Style="{StaticResource SecondaryKeyStyle}"
+                                HeightRequest="36"
+                                WidthRequest="72"
+                                Clicked="OnMemorySubtractClicked"
+                                SemanticProperties.Hint="Retrancher la valeur courante de la mémoire" />
+                    </Border>
+                </HorizontalStackLayout>
+
+                <!--
+                    Layout 7 : FlexLayout pour les touches scientifiques.
+                    Wrap="Wrap" permet de passer automatiquement à la ligne sur un petit
+                    écran, au lieu de tronquer les touches.
+                -->
+                <FlexLayout x:Name="ScientificRow"
+                            Wrap="Wrap"
+                            Direction="Row"
+                            JustifyContent="Start"
+                            AlignItems="Center"
+                            AlignContent="Start">
+                    <Button Text="√"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnSqrtClicked"
+                            SemanticProperties.Hint="Racine carrée" />
+                    <Button Text="x²"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnSquareClicked"
+                            SemanticProperties.Hint="Carré de la valeur courante" />
+                    <Button Text="xʸ"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnPowerClicked"
+                            SemanticProperties.Hint="Puissance : la valeur courante est élevée à la suivante" />
+                    <Button Text="1/x"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnReciprocalClicked"
+                            SemanticProperties.Hint="Inverse de la valeur courante" />
+                    <Button Text="%"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnPercentClicked"
+                            SemanticProperties.Hint="Pourcentage" />
+                    <Button Text="±"
+                            Style="{StaticResource FunctionKeyStyle}"
+                            HeightRequest="40"
+                            MinimumWidthRequest="62"
+                            Margin="0,0,6,6"
+                            Clicked="OnToggleSignClicked"
+                            SemanticProperties.Hint="Changer le signe" />
+                </FlexLayout>
+
+                <!-- Layout 1 : Grid de 4 colonnes x 5 lignes pour les touches principales -->
+                <Grid x:Name="KeypadGrid"
+                      RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnDefinitions="*,*,*,*"
+                      RowSpacing="6"
+                      ColumnSpacing="6">
+
+                    <Button Grid.Row="0" Grid.Column="0" Text="7" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="0" Grid.Column="1" Text="8" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="0" Grid.Column="2" Text="9" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="0" Grid.Column="3" Text="÷" Style="{StaticResource OperatorKeyStyle}" HeightRequest="56" Clicked="OnOperatorClicked" />
+
+                    <Button Grid.Row="1" Grid.Column="0" Text="4" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="1" Grid.Column="1" Text="5" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="1" Grid.Column="2" Text="6" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="1" Grid.Column="3" Text="×" Style="{StaticResource OperatorKeyStyle}" HeightRequest="56" Clicked="OnOperatorClicked" />
+
+                    <Button Grid.Row="2" Grid.Column="0" Text="1" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="2" Grid.Column="1" Text="2" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="2" Grid.Column="2" Text="3" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="2" Grid.Column="3" Text="−" Style="{StaticResource OperatorKeyStyle}" HeightRequest="56" Clicked="OnOperatorClicked" />
+
+                    <Button Grid.Row="3" Grid.Column="0" Text="±" Style="{StaticResource FunctionKeyStyle}" HeightRequest="56" Clicked="OnToggleSignClicked" />
+                    <Button Grid.Row="3" Grid.Column="1" Text="0" Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDigitClicked" />
+                    <Button Grid.Row="3" Grid.Column="2" Text="," Style="{StaticResource DigitKeyStyle}" HeightRequest="56" Clicked="OnDecimalClicked" />
+                    <Button Grid.Row="3" Grid.Column="3" Text="+" Style="{StaticResource OperatorKeyStyle}" HeightRequest="56" Clicked="OnOperatorClicked" />
+
+                    <Button Grid.Row="4" Grid.Column="0" Text="⌫" Style="{StaticResource FunctionKeyStyle}" HeightRequest="56" Clicked="OnBackspaceClicked" />
+                    <Button Grid.Row="4" Grid.Column="1" Text="CE" Style="{StaticResource FunctionKeyStyle}" HeightRequest="56" Clicked="OnClearEntryClicked" />
+                    <Button Grid.Row="4" Grid.Column="2"
+                                                Text="="
+                            Style="{StaticResource EqualsKeyStyle}"
+                            HeightRequest="56"
+                            Clicked="OnEqualsClicked" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ========================= BANNIÈRE D'INFORMATION ========================= -->
+        <!-- Layout 8 : AbsoluteLayout pour superposer le message d'erreur
+             (division par zéro, saisie trop longue) sans décaler la mise en page. -->
+        <AbsoluteLayout x:Name="StatusOverlay"
+                        Grid.Row="0"
+                        InputTransparent="True"
+                        BackgroundColor="Transparent">
+            <Border AbsoluteLayout.LayoutBounds="0,0,1,0.09"
+                    AbsoluteLayout.LayoutFlags="WidthProportional,HeightProportional"
+                    x:Name="StatusBanner"
+                    IsVisible="{Binding IsStatusVisible}"
+                    BackgroundColor="{StaticResource SurfaceVariant}"
+                    Stroke="{StaticResource Error}"
+                    StrokeThickness="1"
+                    Padding="16,10"
+                    StrokeShape="RoundRectangle 16"
+                    Margin="14,12">
+                <Label x:Name="StatusLabel"
+                       Text="{Binding StatusMessage}"
+                       FontSize="13"
+                       TextColor="{StaticResource KeyText}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       LineBreakMode="TailTruncation">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding StatusIsError}"
+                                     Value="True">
+                            <Setter Property="TextColor" Value="{StaticResource Error}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </Border>
+        </AbsoluteLayout>
+    </Grid>
+</ContentPage>

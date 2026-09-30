@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{StaticResource PageBackground}" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style TargetType="Border">
+        <Setter Property="Stroke" Value="{StaticResource SurfaceOutline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource Primary}" />
+    </Style>
+
+    <Style TargetType="BoxView">
+        <Setter Property="Color" Value="{StaticResource DarkGray}" />
+    </Style>
+
+    <!-- Style de base des boutons de la calculatrice -->
+    <Style x:Key="ButtonBaseStyle" TargetType="Button">
+        <Setter Property="TextColor" Value="{StaticResource KeyText}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource KeyNumberBackground}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinimumHeightRequest" Value="0" />
+        <Setter Property="MinimumWidthRequest" Value="0" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.6" />
+                            <Setter Property="Scale" Value="0.95" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.35" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- Applique le style de base à tous les boutons qui n'ont pas de style explicite -->
+    <Style TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}" />
+
+    <!-- Touche chiffrée -->
+    <Style x:Key="DigitKeyStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource KeyNumberBackground}" />
+        <Setter Property="TextColor" Value="{StaticResource KeyText}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="26" />
+    </Style>
+
+    <!-- Touche de fonction (CE, ⌫, ±, %) -->
+    <Style x:Key="FunctionKeyStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource KeyFunctionBackground}" />
+        <Setter Property="TextColor" Value="{StaticResource LightGray}" />
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+
+    <!-- Touche d'opération (+ − × ÷) -->
+    <Style x:Key="OperatorKeyStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource KeyOperatorBackground}" />
+        <Setter Property="TextColor" Value="{StaticResource KeyOperatorText}" />
+        <Setter Property="FontSize" Value="28" />
+    </Style>
+
+    <!-- Touche égale -->
+    <Style x:Key="EqualsKeyStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource KeyEqualsBackground}" />
+        <Setter Property="TextColor" Value="{StaticResource KeyOperatorText}" />
+        <Setter Property="FontSize" Value="28" />
+    </Style>
+
+    <!-- Touche secondaire (mémoire, scientifiques) -->
+    <Style x:Key="SecondaryKeyStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Primary}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style x:Key="BaseStyle" TargetType="Element">
+        <Setter Property="Shell.BackgroundColor" Value="{StaticResource PageBackground}" />
+        <Setter Property="Shell.ForegroundColor" Value="{StaticResource Primary}" />
+        <Setter Property="Shell.TitleColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="Shell.DisabledColor" Value="{StaticResource DarkGray}" />
+        <Setter Property="Shell.UnselectedColor" Value="{StaticResource DarkGray}" />
+        <Setter Property="Shell.NavBarHasShadow" Value="False" />
+    </Style>
+
+    <Style BasedOn="{StaticResource BaseStyle}" TargetType="ShellItem" ApplyToDerivedTypes="True" />
+
+    <Style TargetType="NavigationPage">
+        <Setter Property="BarBackgroundColor" Value="{StaticResource PageBackground}" />
+        <Setter Property="BarTextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="IconColor" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+</ResourceDictionary>

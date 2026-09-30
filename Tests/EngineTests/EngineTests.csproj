@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Harnais de test du moteur de calcul : il compile les fichiers source de
+    l'application (Models + ViewModels) sans dépendre de .NET MAUI, afin de
+    vérifier la logique des calculs sur n'importe quelle machine.
+    Lancement : dotnet run depuis le dossier Tests/EngineTests
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\CalculatriceMaui\Models\CalculatorEngine.cs" Link="CalculatorEngine.cs" />
+    <Compile Include="..\..\CalculatriceMaui\ViewModels\CalculatorViewModel.cs" Link="CalculatorViewModel.cs" />
+  </ItemGroup>
+
+</Project>

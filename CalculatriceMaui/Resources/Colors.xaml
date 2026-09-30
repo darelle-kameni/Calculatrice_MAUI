@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Thème sombre imposé à l'application (voir App.xaml.cs) -->
+    <Color x:Key="Primary">#38BDF8</Color>
+    <Color x:Key="Light">#BAE6FD</Color>
+    <Color x:Key="Dark">#0F172A</Color>
+    <Color x:Key="White">#F8FAFC</Color>
+    <Color x:Key="Black">#020617</Color>
+    <Color x:Key="LightGray">#E2E8F0</Color>
+    <Color x:Key="MidGray">#94A3B8</Color>
+    <Color x:Key="DarkGray">#475569</Color>
+
+    <!-- Fondations de l'interface de la calculatrice -->
+    <Color x:Key="PageBackground">#0F172A</Color>
+    <Color x:Key="Surface">#1E293B</Color>
+    <Color x:Key="SurfaceVariant">#334155</Color>
+    <Color x:Key="SurfaceOutline">#3F4C63</Color>
+
+    <!-- Touches -->
+    <Color x:Key="KeyNumberBackground">#1E293B</Color>
+    <Color x:Key="KeyFunctionBackground">#334155</Color>
+    <Color x:Key="KeyOperatorBackground">#38BDF8</Color>
+    <Color x:Key="KeyEqualsBackground">#F59E0B</Color>
+    <Color x:Key="KeyText">#F8FAFC</Color>
+    <Color x:Key="KeyOperatorText">#0F172A</Color>
+
+    <!-- Textes -->
+    <Color x:Key="TextPrimary">#F1F5F9</Color>
+    <Color x:Key="TextSecondary">#94A3B8</Color>
+
+    <!-- États -->
+    <Color x:Key="Error">#FB7185</Color>
+    <Color x:Key="Success">#34D399</Color>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="LightBrush" Color="{StaticResource Light}"/>
+    <SolidColorBrush x:Key="DarkBrush" Color="{StaticResource Dark}"/>
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGray}"/>
+    <SolidColorBrush x:Key="MidGrayBrush" Color="{StaticResource MidGray}"/>
+    <SolidColorBrush x:Key="DarkGrayBrush" Color="{StaticResource DarkGray}"/>
+    <SolidColorBrush x:Key="PageBackgroundBrush" Color="{StaticResource PageBackground}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="{StaticResource SurfaceVariant}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Error}"/>
+
+</ResourceDictionary>
